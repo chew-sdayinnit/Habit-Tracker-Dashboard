@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
+<style>
+:root{
+  --bg:#0a0a0f;
+  --s1:#0f0f17;
+  --s2:#14141f;
+  --s3:#1a1a28;
+  --s4:#20202e;
+  --border:#ffffff0d;
+  --border2:#ffffff15;
+  --t1:#ffffff;
+  --t2:#9999bb;
+  --t3:#55556a;
+  --t4:#2a2a3a;
+  --green:#00e676;--green2:#00e67618;--green3:#00e67630;
+  --blue:#4fc3f7;--blue2:#4fc3f718;
+  --purple:#ce93d8;--purple2:#ce93d818;
+  --amber:#ffb74d;--amber2:#ffb74d18;
+  --red:#ef5350;--red2:#ef535018;
+  --pink:#f48fb1;--pink2:#f48fb118;
+  --mono:'JetBrains Mono',monospace;
+  --r:10px;--r2:14px;--r3:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%;overflow:hidden}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased;font-size:13px}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--s4);border-radius:3px}
+*{-webkit-tap-highlight-color:transparent}
+
+/* ── Layout ──────────────────────────────── */
+#root{display:flex;flex-direction:column}
+.shell{display:flex;flex:1;min-height:0;overflow:hidden}
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;gap:12px}
+.tb-left{display:flex;flex-direction:column;gap:2px}
+.tb-name{font-size:16px;font-weight:700;color:var(--t1);letter-spacing:-.02em}
+.tb-date{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.12em;font-weight:500}
+.tb-pills{display:flex;gap:6px;align-items:center}
+.pill{background:var(--s3);border:1px solid var(--border2);border-radius:20px;padding:4px 11px;font-size:11px;color:var(--t2);font-weight:500;white-space:nowrap}
+.pill.live{background:var(--green2);border-color:var(--green3);color:var(--green)}
+
+/* ── Sidebar ─────────────────────────────── */
+.sidebar{width:68px;background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:12px 0 14px;gap:4px;flex-shrink:0}
+.nb{width:48px;height:48px;border-radius:var(--r);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:transparent;color:var(--t4);transition:all .15s}
+.nb .i{font-size:19px;line-height:1}
+.nb .l{font-size:8px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;color:inherit;line-height:1}
+.nb:hover{background:var(--s3);color:var(--t2)}
+.nb.on{background:var(--s3);color:var(--t1)}
+.nb.on .i{filter:drop-shadow(0 0 6px currentColor)}
+.ns{flex:1}
+.aib{width:42px;height:42px;border-radius:var(--r);border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;background:transparent;color:var(--green);font-size:15px;transition:all .18s}
+.aib:hover{background:var(--green2);box-shadow:0 0 16px var(--green2)}
+.aib.on{background:var(--green);color:#0a0a0f;border-color:var(--green);box-shadow:0 0 20px var(--green3)}
+
+/* ── Main content ────────────────────────── */
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.scroll{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+
+/* ── Cards ───────────────────────────────── */
+.c{background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px}
+.c2{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* ── Stat boxes ──────────────────────────── */
+.sb{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:16px;position:relative;overflow:hidden;transition:border-color .15s}
+.sb:hover{border-color:var(--border2)}
+.sb-accent{position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r2) var(--r2) 0 0}
+.sb-label{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:8px}
+.sb-val{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--t1);line-height:1}
+.sb-sub{font-size:11px;color:var(--t3);margin-top:4px}
+
+/* ── Section heading ─────────────────────── */
+.sh{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sh::after{content:'';height:1px;background:var(--border);flex:1}
+
+/* ── Inputs ──────────────────────────────── */
+input,select,textarea{
+  background:var(--s1);border:1px solid var(--border2);border-radius:var(--r);
+  color:var(--t1);padding:9px 12px;font-size:13px;outline:none;width:100%;
+  font-family:'Inter',sans-serif;transition:border-color .15s;-webkit-appearance:none;
+  -webkit-text-fill-color:var(--t1);
+}
+input:focus,select:focus,textarea:focus{border-color:#4fc3f755;background:var(--s2)}
+input::placeholder{color:var(--t4)}
+select option{background:var(--s2);color:var(--t1)}
+
+/* ── Buttons ─────────────────────────────── */
+.btn{background:var(--green);color:#0a0a0f;border:none;border-radius:var(--r);padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;transition:all .15s;letter-spacing:-.01em}
+.btn:hover{filter:brightness(1.1);box-shadow:0 4px 16px var(--green2)}
+.btn:active{transform:scale(.98)}
+.btng{background:transparent;color:var(--t2);border:1px solid var(--border2);border-radius:var(--r);padding:7px 13px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.btng:hover{background:var(--s3);color:var(--t1)}
+.btng.on{color:var(--green);border-color:var(--green3);background:var(--green2)}
+.btni{background:none;border:none;cursor:pointer;color:var(--t3);padding:2px 6px;font-size:12px;border-radius:6px;transition:all .15s;line-height:1}
+.btni:hover{color:var(--red);background:var(--red2)}
+
+/* ── Progress ────────────────────────────── */
+.pt{background:var(--s3);border-radius:6px;height:5px;overflow:hidden}
+.pt.thin{height:3px}
+.pb{height:100%;border-radius:6px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* ── Checkboxes ──────────────────────────── */
+.cbx{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border2);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:#0a0a0f;flex-shrink:0;transition:all .2s}
+.cbx.on{border-color:var(--green);background:var(--green)}
+.cbx2{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--border2);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:#0a0a0f;flex-shrink:0;transition:all .2s}
+.cbx2.on{background:var(--green);border-color:var(--green)}
+
+/* ── Row ─────────────────────────────────── */
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.row:last-child{border:none}
+
+/* ── AI panel ────────────────────────────── */
+.aip{width:0;flex-shrink:0;background:var(--s1);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width .26s cubic-bezier(.4,0,.2,1)}
+.aip.on{width:340px}
+.cm{padding:10px 14px;font-size:13px;line-height:1.6;border-radius:12px;max-width:92%;white-space:pre-wrap}
+.cm.u{align-self:flex-end;background:#0d2818;color:#a5f0b0;border:1px solid var(--green3);border-radius:14px 14px 3px 14px}
+.cm.a{align-self:flex-start;background:var(--s2);border:1px solid var(--border2);color:var(--t1);border-radius:14px 14px 14px 3px}
+
+/* ── Week dots ───────────────────────────── */
+.wdot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#0a0a0f;transition:all .2s;flex-shrink:0}
+
+/* ── Mobile ──────────────────────────────── */
+.mobnav{display:none;background:var(--s1);border-top:1px solid var(--border);padding:6px 4px 10px;flex-shrink:0}
+.mobin{display:flex;justify-content:space-around;align-items:center}
+.mbb{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;border:none;background:transparent;color:var(--t4);padding:4px 6px;border-radius:8px;transition:color .15s;font-family:'Inter',sans-serif}
+.mbb .i{font-size:20px}
+.mbb .l{font-size:8px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;color:inherit}
+.mbb.on{color:var(--green)}
+.mbai{width:36px;height:36px;border-radius:10px;border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;background:transparent;color:var(--green);font-size:14px;transition:all .15s}
+.mbai.on{background:var(--green);color:#0a0a0f;border-color:var(--green)}
+
+@media(max-width:640px){
+  .sidebar{display:none}
+  .mobnav{display:block}
+  .aip.on{height:360px;width:100%!important}
+  .g3{grid-template-columns:1fr 1fr}
+  .g4{grid-template-columns:1fr 1fr}
+  .fg4{grid-template-columns:1fr 1fr!important}
+  .scroll{padding:14px;gap:10px}
+}
+</style>
+</head>
+<body><div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useMemo}=React;
+const today=()=>new Date().toISOString().split('T')[0];
+const month=()=>today().slice(0,7);
+const fmt=d=>new Date(d+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const dn=d=>new Date(d+'T12:00').toLocaleDateString('en-US',{weekday:'narrow'});
+const last=(n)=>{const a=[];for(let i=n-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);a.push(d.toISOString().split('T')[0]);}return a;};
+const get=(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}};
+const set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const G='#00e676',B='#4fc3f7',P='#ce93d8',A='#ffb74d',R='#ef5350',PK='#f48fb1';
+const PRI={high:R,medium:A,low:'#55556a'};
+const DEF={fitness:{workouts:[]},sleep:{logs:[]},goals:{list:[],habits:[]},todos:{list:[]},business:{clients:[],retainers:[]},finance:{transactions:[]}};
+
+/* ══ VISUAL COMPONENTS ══════════════════════════════════ */
+
+function Ring({pct=0,sz=120,sw=10,color=G,val='',label='',sub='',glow=false}){
+  const r=(sz-sw)/2,c=2*Math.PI*r,dash=c*(Math.min(Math.max(pct,0),100)/100);
+  return(
+    <div style={{position:'relative',width:sz,height:sz,flexShrink:0}}>
+      <svg width={sz} height={sz} style={{transform:'rotate(-90deg)',display:'block'}}>
+        <circle cx={sz/2} cy={sz/2} r={r} fill="none" stroke="var(--s3)" strokeWidth={sw}/>
+        <circle cx={sz/2} cy={sz/2} r={r} fill="none" stroke={color} strokeWidth={sw}
+          strokeDasharray={`${dash} ${c}`} strokeLinecap="round"
+          style={{transition:'stroke-dasharray .7s cubic-bezier(.4,0,.2,1)',filter:glow?`drop-shadow(0 0 6px ${color})`:'none'}}/>
+      </svg>
+      <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1}}>
+        <div style={{fontFamily:'var(--mono)',fontSize:sz>100?sz>130?32:26:sz>80?20:16,fontWeight:700,color:'#fff',lineHeight:1,letterSpacing:'-.02em'}}>{val||`${Math.round(pct)}%`}</div>
+        {label&&<div style={{fontSize:9,color:'var(--t3)',letterSpacing:'.12em',textTransform:'uppercase',fontWeight:600,marginTop:2}}>{label}</div>}
+        {sub&&<div style={{fontSize:10,color,fontWeight:600,marginTop:1}}>{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+function Spark({vals=[],color=G,h=48,showArea=true}){
+  if(!vals||vals.length<2)return <div style={{height:h,background:'var(--s3)',borderRadius:8,opacity:.4}}/>;
+  const mn=Math.min(...vals),mx=Math.max(...vals),rng=mx-mn||1;
+  const W=300,H=h;
+  const pts=vals.map((v,i)=>[i*(W/(vals.length-1)),(1-(v-mn)/rng)*(H-12)+6]);
+  const path='M'+pts.map(([x,y])=>`${x.toFixed(1)},${y.toFixed(1)}`).join(' L');
+  const id='sp'+Math.random().toString(36).slice(2,6);
+  return(
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{overflow:'visible',display:'block'}}>
+      <defs><linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor={color} stopOpacity=".3"/>
+        <stop offset="100%" stopColor={color} stopOpacity="0"/>
+      </linearGradient></defs>
+      {showArea&&<path d={path+` L${pts[pts.length-1][0]},${H} L0,${H} Z`} fill={`url(#${id})`}/>}
+      <path d={path} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      {pts.map(([x,y],i)=>(
+        <g key={i}>
+          {i===pts.length-1&&<circle cx={x} cy={y} r={5} fill={color} stroke="var(--s2)" strokeWidth="2" style={{filter:`drop-shadow(0 0 4px ${color})`}}/>}
+          {i!==pts.length-1&&<circle cx={x} cy={y} r={2} fill={color} opacity=".6"/>}
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+function Bars({vals=[],labels=[],color=G,h=80}){
+  const mx=Math.max(...vals.map(v=>Number(v)||0),1);
+  return(
+    <div style={{display:'flex',gap:6,alignItems:'flex-end',height:h}}>
+      {vals.map((v,i)=>{
+        const pct=((Number(v)||0)/mx)*100;
+        const isTd=i===vals.length-1;
+        const c=isTd?color:color+'55';
+        return(
+          <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,height:'100%',justifyContent:'flex-end'}}>
+            {Number(v)>0&&<div style={{fontSize:9,color:isTd?'var(--t2)':'var(--t3)',fontFamily:'var(--mono)',fontWeight:500}}>{Number(v)%1===0?v:Number(v).toFixed(1)}</div>}
+            <div style={{width:'100%',height:`${Math.max(pct,Number(v)?2:0)}%`,background:`linear-gradient(180deg,${c},${c}88)`,borderRadius:'4px 4px 2px 2px',transition:'height .4s ease',boxShadow:isTd&&Number(v)?`0 0 8px ${color}44`:''}}/>
+            {labels[i]&&<div style={{fontSize:9,color:isTd?'var(--t2)':'var(--t3)',fontWeight:isTd?600:400}}>{labels[i]}</div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Heatmap({days=[],color=G,weeks=5}){
+  const cells=last(weeks*7);const has=new Set(days);
+  const cols=[];for(let w=0;w<weeks;w++)cols.push(cells.slice(w*7,(w+1)*7));
+  return(
+    <div style={{display:'flex',gap:3}}>
+      {cols.map((wk,wi)=>(
+        <div key={wi} style={{display:'flex',flexDirection:'column',gap:3,flex:1}}>
+          {wk.map((d,di)=>{
+            const a=has.has(d),isTd=d===today();
+            return <div key={di} title={fmt(d)} style={{height:12,borderRadius:3,background:a?color+'bb':'var(--s3)',border:isTd?`1px solid ${color}88`:'1px solid transparent',transition:'background .2s'}}/>;
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WeekDots({dates=[],color=G}){
+  const days=last(7);
+  return(
+    <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+      {days.map(d=>{
+        const done=dates.includes(d),isTd=d===today();
+        return(
+          <div key={d} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+            <div className="wdot" style={{background:done?color:'var(--s3)',border:`1.5px solid ${done?color:isTd?color+'50':'var(--border2)'}`,color:done?'#0a0a0f':'var(--t3)',boxShadow:done?`0 0 8px ${color}55`:''}}>
+              {done&&'✓'}
+            </div>
+            <span style={{fontSize:8,color:isTd?'var(--t2)':'var(--t4)',fontWeight:isTd?700:400}}>{dn(d)}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function MiniStat({label,val,color=G,sub}){
+  return(
+    <div className="c2" style={{borderLeft:`2px solid ${color}`}}>
+      <div style={{fontSize:9,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:5}}>{label}</div>
+      <div style={{fontFamily:'var(--mono)',fontSize:20,fontWeight:700,color,lineHeight:1}}>{val}</div>
+      {sub&&<div style={{fontSize:10,color:'var(--t3)',marginTop:3}}>{sub}</div>}
+    </div>
+  );
+}
+
+function Prog({pct,color=G,thin=false}){
+  return <div className={`pt${thin?' thin':''}`}><div className="pb" style={{width:`${Math.min(pct,100)}%`,background:color}}/></div>;
+}
+
+/* ══ AI PANEL ═══════════════════════════════════════════ */
+function AIPanel({data,open,onClose}){
+  const [msgs,setMsgs]=useState([]);
+  const [inp,setInp]=useState('');
+  const [loading,setLoading]=useState(false);
+  const [apiKey,setApiKey]=useState(()=>localStorage.getItem('dash-apikey')||'');
+  const [showKey,setShowKey]=useState(false);
+  const bot=useRef(null);
+  useEffect(()=>{if(bot.current)bot.current.scrollIntoView({behavior:'smooth'});},[msgs,loading]);
+  const ctx=()=>{
+    const t=today(),m=month(),days=last(7);
+    const mtx=data.finance.transactions.filter(x=>x.date && x.date.startsWith(m));
+    const inc=mtx.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount),0);
+    const exp=mtx.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount),0);
+    const mrr=data.business.retainers.reduce((s,r)=>s+Number(r.amount||0),0);
+    return `Today:${t}
+FITNESS:${data.fitness.workouts.filter(w=>days.includes(w.date)).length} workouts this week
+SLEEP:${JSON.stringify(data.sleep.logs.filter(l=>days.includes(l.date)))}
+GOALS:${JSON.stringify(data.goals.list)}
+HABITS:${JSON.stringify(data.goals.habits.map(h=>({name:h.name,doneToday:(h.completedDates && h.completedDates.includes(t))})))}
+TODOS:${JSON.stringify(data.todos.list.filter(x=>!x.done).slice(0,8))}
+BUSINESS: ${(data.business.clients ? data.business.clients.length : 0)||0} clients, MRR $${mrr}
+FINANCE: Income $${inc}, Expenses $${exp}, Net $${inc-exp}`;
+  };
+  const send=async()=>{
+    if(!inp.trim()||loading||!apiKey)return;
+    const msg=inp.trim();setInp('');
+    const m=[...msgs,{role:'user',content:msg}];setMsgs(m);setLoading(true);
+    try{
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+          system:`You are a direct, data-driven personal coach. Use the dashboard data. Be concise and actionable. Reference actual numbers.\n\n${ctx()}`,messages:m})});
+      const j=await r.json();
+      setMsgs([...m,{role:'assistant',content:(j.content && j.content[0] ? j.content[0].text : null)||'Error.'}]);
+    }catch(e){setMsgs([...m,{role:'assistant',content:'Error: '+e.message}]);}
+    setLoading(false);
+  };
+  return(
+    <div className={`aip${open?' on':''}`}>
+      <div style={{padding:'14px 16px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+        <div>
+          <div style={{fontSize:13,fontWeight:700,color:G,display:'flex',alignItems:'center',gap:7}}>
+            <span style={{width:7,height:7,borderRadius:'50%',background:G,display:'inline-block',boxShadow:`0 0 8px ${G}`}}/>Overseer
+          </div>
+          <div style={{fontSize:11,color:'var(--t3)',marginTop:1}}>Knows your dashboard</div>
+        </div>
+        <div style={{display:'flex',gap:6}}>
+          <button onClick={()=>setShowKey(p=>!p)} className="btng" style={{padding:'4px 9px',fontSize:11}}>API Key</button>
+          <button onClick={onClose} className="btni">✕</button>
+        </div>
+      </div>
+      {showKey&&<div style={{padding:'12px 16px',borderBottom:'1px solid var(--border)',background:'var(--s2)'}}>
+        <div style={{fontSize:11,color:'var(--t2)',marginBottom:6}}>Anthropic key — stored locally</div>
+        <div style={{display:'flex',gap:6}}>
+          <input type="password" value={apiKey} onChange={e=>setApiKey(e.target.value)} placeholder="sk-ant-..." style={{flex:1,fontSize:12}}/>
+          <button onClick={()=>{localStorage.setItem('dash-apikey',apiKey);setShowKey(false);}} className="btn" style={{padding:'8px 12px',fontSize:12}}>Save</button>
+        </div>
+        <div style={{fontSize:10,color:'var(--t4)',marginTop:5}}>console.anthropic.com → API Keys</div>
+      </div>}
+      <div style={{flex:1,overflowY:'auto',padding:14,display:'flex',flexDirection:'column',gap:10}}>
+        {msgs.length===0&&<div style={{textAlign:'center',color:'var(--t3)',fontSize:12,marginTop:32,lineHeight:2.3}}>
+          {!apiKey&&<div style={{color:A,marginBottom:10,fontSize:12}}>⚠ Add your API key above to enable</div>}
+          <div style={{color:'var(--t4)'}}>"Am I on track this week?"<br/>"What should I focus on?"<br/>"How's my sleep trending?"</div>
+        </div>}
+        {msgs.map((m,i)=><div key={i} className={`cm ${m.role==='user'?'u':'a'}`}>{m.content}</div>)}
+        {loading&&<div style={{alignSelf:'flex-start',color:'var(--t3)',fontSize:12,display:'flex',gap:4,alignItems:'center'}}>
+          <span style={{width:6,height:6,borderRadius:'50%',background:G,animation:'pulse 1s infinite',display:'inline-block'}}/>Thinking...
+        </div>}
+        <div ref={bot}/>
+      </div>
+      <div style={{padding:'12px 14px',borderTop:'1px solid var(--border)',display:'flex',gap:8,flexShrink:0}}>
+        <input value={inp} onChange={e=>setInp(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send()} placeholder="Message Overseer..."/>
+        <button onClick={send} className="btn" style={{padding:'9px 14px',fontSize:14}}>↑</button>
+      </div>
+    </div>
+  );
+}
+
+/* ══ OVERVIEW ═══════════════════════════════════════════ */
+function Overview({data}){
+  const t=today(),days=last(7),m=month();
+  const wW=data.fitness.workouts.filter(w=>days.includes(w.date)).length;
+  const tSl=data.sleep.logs.find(l=>l.date===t);
+  const habDone=data.goals.habits.filter(h=>(h.completedDates && h.completedDates.includes(t))).length;
+  const habTotal=data.goals.habits.length;
+  const done=data.todos.list.filter(x=>x.done).length,total=data.todos.list.length;
+  const mtx=data.finance.transactions.filter(x=>x.date && x.date.startsWith(m));
+  const inc=mtx.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount),0);
+  const exp=mtx.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount),0);
+  const net=inc-exp;const sleepPct=tSl && tSl.quality ? Math.round(Number(tSl.quality)/5*100) : 0;
+  const mrr=(data.business.retainers ? data.business.retainers.reduce((s,r)=>s+Number(r.amount||0),0) : 0)||0;
+  const slTrend=days.map(d=>{const l=data.sleep.logs.find(x=>x.date===d);return (l ? Number(l.hours) : 0)||0;});
+  const volTrend=days.map(d=>{const w=data.fitness.workouts.find(x=>x.date===d);return (w && w.exercises ? w.exercises.reduce((s,e)=>s+Number(e.sets||0)*Number(e.reps||0)*Number(e.weight||0),0) : 0);});
+  const h=new Date().getHours();
+  const gr=h<5?'Still up late':`Good ${h<12?'morning':h<17?'afternoon':'evening'}`;
+  return(<div>
+    <div style={{marginBottom:2}}>
+      <div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.12em',fontWeight:600}}>{new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
+      <div style={{fontSize:26,fontWeight:800,color:'#fff',letterSpacing:'-.02em',marginTop:3}}>{gr} 👋</div>
+    </div>
+
+    {/* 4 rings */}
+    <div className="c">
+      <div className="sh">Daily performance</div>
+      <div style={{display:'flex',justifyContent:'space-around',gap:12,flexWrap:'wrap'}}>
+        {[
+          {label:'Fitness',val:`${wW}/7`,pct:Math.round(wW/7*100),color:G,sub:'days trained'},
+          {label:'Sleep',val:sleepPct?`${sleepPct}%`:'—',pct:sleepPct,color:B,sub:tSl && tSl.hours ? `${tSl.hours}h` : 'log tonight'},
+          {label:'Habits',val:`${habDone}/${habTotal||0}`,pct:habTotal?Math.round(habDone/habTotal*100):0,color:A,sub:'completed'},
+          {label:'Tasks',val:`${done}/${total}`,pct:total?Math.round(done/total*100):0,color:P,sub:`${total?Math.round(done/total*100):0}% done`},
+        ].map(r=>(
+          <div key={r.label} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
+            <Ring pct={r.pct} sz={88} sw={7} color={r.color} val={r.val} sub={r.sub} glow/>
+            <div style={{fontSize:10,color:'var(--t2)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em'}}>{r.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Charts */}
+    <div className="g2">
+      <div className="c">
+        <div className="sh">Workout volume (7d)</div>
+        <Spark vals={volTrend} color={G} h={54}/>
+        <div style={{display:'flex',marginTop:6}}>{days.map(d=><div key={d} style={{flex:1,textAlign:'center',fontSize:8,color:'var(--t4)'}}>{dn(d)}</div>)}</div>
+      </div>
+      <div className="c">
+        <div className="sh">Sleep hours (7d)</div>
+        <Bars vals={slTrend} labels={days.map(dn)} color={B} h={60}/>
+      </div>
+    </div>
+
+    {/* Finance + MRR */}
+    <div className="c">
+      <div className="sh">Finances — {new Date().toLocaleDateString('en-US',{month:'long'})}</div>
+      <div style={{display:'flex',gap:16,alignItems:'center'}}>
+        <Ring pct={inc>0?Math.min(100,Math.max(0,Math.round((inc-exp)/inc*100))):0} sz={90} sw={7} color={net>=0?G:R} val={inc>0?`${Math.max(0,Math.round((inc-exp)/inc*100))}%`:'—'} label="saved" glow/>
+        <div style={{flex:1,display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+          <MiniStat label="MRR" val={`$${mrr.toLocaleString()}`} color={G} sub={`${(data.business.clients ? data.business.clients.length : 0)||0} clients`}/>
+          <MiniStat label="Income" val={`$${inc.toLocaleString()}`} color={G}/>
+          <MiniStat label="Expenses" val={`$${exp.toLocaleString()}`} color={R}/>
+          <MiniStat label="Net" val={`$${(inc-exp).toLocaleString()}`} color={(inc-exp)>=0?G:R}/>
+        </div>
+      </div>
+    </div>
+
+    {/* Habits chip row */}
+    {habTotal>0&&<div className="c">
+      <div className="sh">Habits — today</div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+        {data.goals.habits.map(h=>{const dn2=(h.completedDates && h.completedDates.includes(t));return(
+          <div key={h.id} style={{background:dn2?G+'18':'var(--s3)',border:`1px solid ${dn2?G+'40':'var(--border2)'}`,borderRadius:20,padding:'5px 14px',fontSize:12,color:dn2?G:'var(--t3)',fontWeight:dn2?600:400,display:'flex',gap:6,alignItems:'center',transition:'all .15s'}}>
+            <span style={{fontSize:10}}>{dn2?'●':'○'}</span>{h.name}
+          </div>
+        );})}
+      </div>
+    </div>}
+
+    {/* Priority tasks */}
+    {data.todos.list.filter(t=>!t.done).length>0&&<div className="c">
+      <div className="sh">Today's priorities</div>
+      {data.todos.list.filter(function(tx){return !tx.done;}).slice(0,5).map(tx=>(
+        <div key={tx.id} className="row">
+          <div style={{width:6,height:6,borderRadius:'50%',background:PRI[tx.priority]||'var(--t3)',flexShrink:0}}/>
+          <span style={{flex:1,fontSize:13,color:'var(--t1)'}}>{tx.text}</span>
+          <span style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em',color:PRI[tx.priority]||'var(--t3)'}}>{tx.priority}</span>
+        </div>
+      ))}
+    </div>}
+  </div>);
+}
+
+/* ══ FITNESS ════════════════════════════════════════════ */
+function Fitness({data,save}){
+  const t=today(),days=last(7);
+  const [ex,setEx]=useState({name:'',sets:'',reps:'',weight:''});
+  const tw=data.fitness.workouts.find(w=>w.date===t)||{date:t,exercises:[]};
+  const wD=new Set(data.fitness.workouts.map(w=>w.date));
+  const wkCnt=days.filter(d=>wD.has(d)).length;
+  const tSets=(tw.exercises ? tw.exercises.reduce((s,e)=>s+Number(e.sets||0),0) : 0);
+  const tVol=(tw.exercises ? tw.exercises.reduce((s,e)=>s+Number(e.sets||0)*Number(e.reps||0)*Number(e.weight||0),0) : 0);
+  const volTrend=days.map(d=>{const w=data.fitness.workouts.find(x=>x.date===d);return (w && w.exercises ? w.exercises.reduce((s,e)=>s+Number(e.sets||0)*Number(e.reps||0)*Number(e.weight||0),0) : 0);});
+  const allDays=data.fitness.workouts.map(w=>w.date);
+  const addEx=()=>{
+    if(!ex.name)return;
+    const ws=[...data.fitness.workouts];const idx=ws.findIndex(w=>w.date===t);
+    const ne={...ex,id:Date.now()};
+    if(idx>=0)ws[idx]={...ws[idx],exercises:[...ws[idx].exercises,ne]};
+    else ws.push({date:t,exercises:[ne]});
+    save({...data,fitness:{workouts:ws}});setEx({name:'',sets:'',reps:'',weight:''});
+  };
+  const remEx=(id)=>{const ws=data.fitness.workouts.map(w=>w.date===t?{...w,exercises:w.exercises.filter(e=>e.id!==id)}:w).filter(w=>w.exercises.length>0);save({...data,fitness:{workouts:ws}});};
+  return(<div>
+    {/* Hero card */}
+    <div className="c" style={{background:`linear-gradient(135deg, var(--s2) 0%, #0d2018 100%)`,borderColor:G+'30'}}>
+      <div style={{display:'flex',gap:20,alignItems:'center',flexWrap:'wrap'}}>
+        <Ring pct={Math.round(wkCnt/7*100)} sz={120} sw={10} color={G} val={`${wkCnt}/7`} label="this week" sub="days" glow/>
+        <div style={{flex:1,minWidth:160}}>
+          <div className="g2" style={{gap:8,marginBottom:10}}>
+            <MiniStat label="Sets today" val={tSets} color={G}/>
+            <MiniStat label="Volume (lbs)" val={tVol.toLocaleString()} color={G}/>
+          </div>
+          <div className="sh" style={{marginBottom:8}}>Weekly activity</div>
+          <div style={{display:'flex',gap:4}}>
+            {days.map(d=>{const h=wD.has(d),isTd=d===t;return(
+              <div key={d} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+                <div style={{width:'100%',height:32,borderRadius:6,background:h?G+'cc':'var(--s3)',border:`1px solid ${isTd?G+'80':'transparent'}`,boxShadow:h?`0 0 8px ${G}33`:'',transition:'all .2s'}}/>
+                <span style={{fontSize:8,color:isTd?'var(--t2)':'var(--t4)',fontWeight:isTd?700:400}}>{dn(d)}</span>
+              </div>
+            );})}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Volume trend */}
+    <div className="c">
+      <div className="sh">Volume trend — 7 days</div>
+      <Spark vals={volTrend} color={G} h={60}/>
+      <div style={{display:'flex',marginTop:7}}>{days.map(d=><div key={d} style={{flex:1,textAlign:'center',fontSize:8,color:'var(--t4)'}}>{dn(d)}</div>)}</div>
+    </div>
+
+    {/* Heatmap */}
+    <div className="c">
+      <div className="sh">Training history — 35 days</div>
+      <Heatmap days={allDays} color={G} weeks={5}/>
+      <div style={{display:'flex',justifyContent:'flex-end',gap:5,marginTop:10,alignItems:'center'}}>
+        <span style={{fontSize:9,color:'var(--t4)'}}>Less</span>
+        {['var(--s3)',G+'44',G+'88',G+'cc'].map((c,i)=><div key={i} style={{width:11,height:11,borderRadius:3,background:c}}/>)}
+        <span style={{fontSize:9,color:'var(--t4)'}}>More</span>
+      </div>
+    </div>
+
+    {/* Log */}
+    <div className="c">
+      <div className="sh">Log exercise</div>
+      <div className="fg4" style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr',gap:8,marginBottom:10}}>
+        <input value={ex.name} onChange={e=>setEx(p=>({...p,name:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&addEx()} placeholder="Exercise name"/>
+        <input value={ex.sets} onChange={e=>setEx(p=>({...p,sets:e.target.value}))} placeholder="Sets" type="number"/>
+        <input value={ex.reps} onChange={e=>setEx(p=>({...p,reps:e.target.value}))} placeholder="Reps" type="number"/>
+        <input value={ex.weight} onChange={e=>setEx(p=>({...p,weight:e.target.value}))} placeholder="lbs" type="number"/>
+      </div>
+      <button onClick={addEx} className="btn">Add Exercise</button>
+    </div>
+
+    {/* Today's session */}
+    {(tw.exercises && tw.exercises.length>0)&&<div className="c">
+      <div className="sh">Today's session</div>
+      <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr auto',gap:8,marginBottom:8,padding:'0 0 8px',borderBottom:'1px solid var(--border)'}}>
+        {['Exercise','Sets','Reps','Weight',''].map((h,i)=><div key={i} style={{fontSize:9,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:700}}>{h}</div>)}
+      </div>
+      {tw.exercises.map(e=>(
+        <div key={e.id} style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr auto',gap:8,padding:'8px 0',borderBottom:'1px solid var(--border)',alignItems:'center'}}>
+          <span style={{fontSize:13,fontWeight:600,color:'#fff'}}>{e.name}</span>
+          <span style={{fontFamily:'var(--mono)',fontSize:13,color:G,fontWeight:600}}>{e.sets}</span>
+          <span style={{fontFamily:'var(--mono)',fontSize:13,color:'var(--t1)'}}>{e.reps}</span>
+          <span style={{fontFamily:'var(--mono)',fontSize:13,color:'var(--t2)'}}>{e.weight}lbs</span>
+          <button className="btni" onClick={()=>remEx(e.id)}>✕</button>
+        </div>
+      ))}
+    </div>}
+
+    {/* History */}
+    {data.fitness.workouts.filter(w=>w.date!==t).slice(-3).reverse().map(w=>(
+      <div key={w.date} className="c2">
+        <div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:8}}>{fmt(w.date)}</div>
+        {w.exercises.map((e,i)=><div key={i} style={{fontSize:13,padding:'4px 0',borderTop:'1px solid var(--border)',color:'var(--t1)'}}><span style={{fontWeight:600}}>{e.name}</span> <span style={{color:'var(--t2)'}}>{e.sets}×{e.reps} @ {e.weight}lbs</span></div>)}
+      </div>
+    ))}
+  </div>);
+}
+
+/* ══ SLEEP & HEALTH ═════════════════════════════════════ */
+function SleepHealth({data,save}){
+  const t=today(),days=last(7);
+  const tL=data.sleep.logs.find(l=>l.date===t)||{};
+  const [form,setForm]=useState({hours:tL.hours||'',quality:tL.quality||'',water:tL.water||'',steps:tL.steps||'',bodyWeight:tL.bodyWeight||''});
+  const recent=days.map(d=>data.sleep.logs.find(l=>l.date===d)||{date:d});
+  const hL=recent.filter(l=>l.hours),avg=hL.length?hL.reduce((s,l)=>s+Number(l.hours),0)/hL.length:0;
+  const sp=tL.quality?Math.round(Number(tL.quality)/5*100):0;
+  const qC=q=>!q?'var(--border2)':q>=4?G:q>=3?A:R;
+  const logT=()=>{const logs=data.sleep.logs.filter(l=>l.date!==t);logs.push({date:t,...form});save({...data,sleep:{logs}});};
+  const slHrs=days.map(d=>{const l=data.sleep.logs.find(x=>x.date===d);return (l ? Number(l.hours) : 0)||0;});
+  const slQ=days.map(d=>{const l=data.sleep.logs.find(x=>x.date===d);return (l ? Number(l.quality) : 0)||0;});
+  const slWater=days.map(d=>{const l=data.sleep.logs.find(x=>x.date===d);return l ? Number(l.water)||0 : 0;});
+  const slWeight=days.map(d=>{const l=data.sleep.logs.find(x=>x.date===d);return l && l.bodyWeight ? Number(l.bodyWeight) : 0;});
+  const waterGoal=2.5;
+  return(<div>
+    {/* WHOOP hero */}
+    <div className="c" style={{background:`linear-gradient(135deg,var(--s2) 0%,#0a1628 100%)`,borderColor:B+'30'}}>
+      <div style={{display:'flex',gap:20,alignItems:'center',flexWrap:'wrap'}}>
+        <Ring pct={sp} sz={120} sw={10} color={sp>=80?G:sp>=60?A:sp>0?R:B} val={sp?`${sp}%`:'—'} label="Sleep score" sub={sp>=80?'optimal':sp>=60?'ok':sp>0?'poor':'log tonight'} glow/>
+        <div style={{flex:1,minWidth:160}}>
+          <div className="g2" style={{gap:8,marginBottom:8}}>
+            <MiniStat label="Avg 7d" val={avg?`${avg.toFixed(1)}h`:'—'} color={B}/>
+            <MiniStat label="Last night" val={tL.hours?`${tL.hours}h`:'—'} color='#fff'/>
+            <MiniStat label="Steps" val={tL.steps||'—'} color='#fff'/>
+            <MiniStat label="Weight" val={tL.bodyWeight?`${tL.bodyWeight}lbs`:'—'} color='#fff'/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Sleep bars */}
+    <div className="c">
+      <div className="sh">Sleep hours — 7 nights</div>
+      <Bars vals={slHrs} labels={days.map(dn)} color={B} h={90}/>
+      <div style={{display:'flex',gap:12,marginTop:10,paddingTop:8,borderTop:'1px solid var(--border)'}}>
+        {[{l:'Optimal',c:G},{l:'Sufficient',c:A},{l:'Poor',c:R}].map(x=><div key={x.l} style={{display:'flex',gap:5,alignItems:'center'}}><div style={{width:7,height:7,borderRadius:'50%',background:x.c}}/><span style={{fontSize:10,color:'var(--t3)'}}>{x.l}</span></div>)}
+        <div style={{marginLeft:'auto',fontSize:10,color:'var(--t3)',fontStyle:'italic'}}>Target: 8h</div>
+      </div>
+    </div>
+
+    {/* Quality trend */}
+    <div className="c">
+      <div className="sh">Sleep quality trend (1–5 scale)</div>
+      <Spark vals={slQ} color={B} h={52}/>
+      <div style={{display:'flex',marginTop:7}}>{days.map(d=><div key={d} style={{flex:1,textAlign:'center',fontSize:8,color:'var(--t4)'}}>{dn(d)}</div>)}</div>
+    </div>
+
+    {/* Water intake */}
+    <div className="c">
+      <div className="sh">Water intake — 7 days</div>
+      <Bars vals={slWater} labels={days.map(dn)} color='#38bdf8' h={80}/>
+      <div style={{display:'flex',justifyContent:'space-between',marginTop:10,paddingTop:8,borderTop:'1px solid var(--border)',alignItems:'center'}}>
+        <div style={{display:'flex',alignItems:'center',gap:6}}>
+          <div style={{width:7,height:7,borderRadius:'50%',background:'#38bdf8'}}/>
+          <span style={{fontSize:10,color:'var(--t3)'}}>Daily intake (L)</span>
+        </div>
+        <span style={{fontSize:10,color:'var(--t3)',fontStyle:'italic'}}>Target: {waterGoal}L</span>
+        <span style={{fontFamily:'var(--mono)',fontSize:11,color:'#38bdf8',fontWeight:700}}>{tL.water ? `${tL.water}L today` : '— today'}</span>
+      </div>
+    </div>
+
+    {/* Body weight sparkline */}
+    {slWeight.some(v=>v>0)&&<div className="c">
+      <div className="sh">Body weight trend — 7 days</div>
+      <Spark vals={slWeight.map(v=>v||null).filter((_,i)=>slWeight[i]>0).length>1?slWeight:slWeight.map(v=>v||0)} color={P} h={54}/>
+      <div style={{display:'flex',marginTop:7}}>{days.map(d=><div key={d} style={{flex:1,textAlign:'center',fontSize:8,color:'var(--t4)'}}>{dn(d)}</div>)}</div>
+      <div style={{display:'flex',justifyContent:'space-between',marginTop:8,paddingTop:8,borderTop:'1px solid var(--border)'}}>
+        <span style={{fontSize:11,color:'var(--t3)'}}>Body weight (lbs)</span>
+        <span style={{fontFamily:'var(--mono)',fontSize:11,color:P,fontWeight:700}}>{tL.bodyWeight ? `${tL.bodyWeight} lbs today` : '— today'}</span>
+      </div>
+    </div>}
+
+    {/* Log */}
+    <div className="c">
+      <div className="sh">Log today</div>
+      <div className="g2" style={{gap:10,marginBottom:12}}>
+        {[{l:'Hours slept',k:'hours',t:'number',s:'0.5',p:'7.5'},{l:'Quality (1–5)',k:'quality',t:'number',p:'4'},{l:'Water (L)',k:'water',t:'number',s:'0.1',p:'2.5'},{l:'Steps',k:'steps',t:'number',p:'8000'},{l:'Weight (lbs)',k:'bodyWeight',t:'number',s:'0.1',p:'180'}].map(f=>(
+          <div key={f.k}><div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:5}}>{f.l}</div><input value={form[f.k]} onChange={e=>setForm(p=>({...p,[f.k]:e.target.value}))} type={f.t} step={f.s} placeholder={f.p}/></div>
+        ))}
+      </div>
+      <button onClick={logT} className="btn">Save today</button>
+    </div>
+  </div>);
+}
+
+/* ══ GOALS & HABITS ════════════════════════════════════ */
+function GoalsHabits({data,save}){
+  const t=today();
+  const [gF,setGF]=useState({title:'',current:'',target:'',unit:''});
+  const [hN,setHN]=useState('');
+  const addG=()=>{if(!gF.title)return;save({...data,goals:{...data.goals,list:[...data.goals.list,{...gF,id:Date.now()}]}});setGF({title:'',current:'',target:'',unit:''});};
+  const updG=(id,v)=>save({...data,goals:{...data.goals,list:data.goals.list.map(g=>g.id===id?{...g,current:v}:g)}});
+  const remG=(id)=>save({...data,goals:{...data.goals,list:data.goals.list.filter(g=>g.id!==id)}});
+  const addH=()=>{if(!hN.trim())return;save({...data,goals:{...data.goals,habits:[...data.goals.habits,{id:Date.now(),name:hN.trim(),completedDates:[]}]}});setHN('');};
+  const togH=(id)=>{const h=data.goals.habits.map(h=>{if(h.id!==id)return h;const d=h.completedDates||[];return{...h,completedDates:d.includes(t)?d.filter(x=>x!==t):[...d,t]};});save({...data,goals:{...data.goals,habits:h}});};
+  const streak=h=>{let s=0;const d=new Date();while((h.completedDates && h.completedDates.includes(d.toISOString().split('T')[0]))){s++;d.setDate(d.getDate()-1);}return s;};
+  const habDone=data.goals.habits.filter(h=>(h.completedDates && h.completedDates.includes(t))).length;
+  const habTotal=data.goals.habits.length;
+  const wkComp=last(7).map(d=>habTotal>0?Math.round(data.goals.habits.filter(h=>(h.completedDates && h.completedDates.includes(d))).length/habTotal*100):0);
+  const COLORS=[G,B,A,P,PK,R,G];
+
+  return(<div>
+    {/* Header stats */}
+    <div className="g2">
+      <div className="c" style={{background:`linear-gradient(135deg,var(--s2),#1a1208)`,borderColor:A+'30'}}>
+        <div className="sh">Habits today</div>
+        <div style={{display:'flex',alignItems:'center',gap:16}}>
+          <Ring pct={habTotal?Math.round(habDone/habTotal*100):0} sz={80} sw={7} color={A} val={`${habDone}/${habTotal}`} glow/>
+          <div>
+            <div style={{fontFamily:'var(--mono)',fontSize:32,fontWeight:700,color:A,lineHeight:1}}>{habTotal?Math.round(habDone/habTotal*100):0}<span style={{fontSize:16,color:'var(--t3)'}}>%</span></div>
+            <div style={{fontSize:11,color:'var(--t3)',marginTop:4}}>completion rate</div>
+          </div>
+        </div>
+      </div>
+      <div className="c" style={{background:`linear-gradient(135deg,var(--s2),#12081a)`,borderColor:P+'30'}}>
+        <div className="sh">Goals</div>
+        <div style={{display:'flex',alignItems:'center',gap:16}}>
+          <Ring pct={data.goals.list.length?Math.round(data.goals.list.filter(g=>g.target&&Number(g.current)>=Number(g.target)).length/data.goals.list.length*100):0} sz={80} sw={7} color={P} val={`${data.goals.list.filter(g=>g.target&&Number(g.current)>=Number(g.target)).length}/${data.goals.list.length}`} glow/>
+          <div>
+            <div style={{fontFamily:'var(--mono)',fontSize:28,fontWeight:700,color:P,lineHeight:1}}>{data.goals.list.length?Math.round(data.goals.list.filter(g=>g.target&&Number(g.current)>=Number(g.target)).length/data.goals.list.length*100):0}<span style={{fontSize:14,color:'var(--t3)'}}>%</span></div>
+            <div style={{fontSize:11,color:'var(--t3)',marginTop:4}}>complete</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Habit completion bars + line trend */}
+    {habTotal>0&&<div className="c">
+      <div className="sh">Completion rate — 7 days</div>
+      <Bars vals={wkComp} labels={last(7).map(dn)} color={A} h={70}/>
+      <div style={{marginTop:18,paddingTop:14,borderTop:'1px solid var(--border)'}}>
+        <div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:10}}>Trend line</div>
+        <Spark vals={wkComp} color={A} h={52}/>
+        <div style={{display:'flex',marginTop:6}}>{last(7).map(d=><div key={d} style={{flex:1,textAlign:'center',fontSize:8,color:'var(--t4)'}}>{dn(d)}</div>)}</div>
+        <div style={{display:'flex',justifyContent:'space-between',marginTop:8,paddingTop:8,borderTop:'1px solid var(--border)'}}>
+          <span style={{fontSize:11,color:'var(--t3)'}}>Daily habit completion %</span>
+          <span style={{fontFamily:'var(--mono)',fontSize:11,color:A,fontWeight:700}}>{wkComp[wkComp.length-1]}% today</span>
+        </div>
+      </div>
+    </div>}
+
+    {/* Habits list - HabitNow style */}
+    <div className="c">
+      <div className="sh">Daily habits</div>
+      {data.goals.habits.length===0&&<div style={{color:'var(--t4)',fontSize:13,textAlign:'center',padding:'16px 0'}}>No habits yet — add one below.</div>}
+      {data.goals.habits.map((h,hi)=>{
+        const done=(h.completedDates && h.completedDates.includes(t)),st=streak(h);
+        const color=COLORS[hi%COLORS.length];
+        return(
+          <div key={h.id} style={{padding:'14px 0',borderBottom:'1px solid var(--border)'}}>
+            <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:10}}>
+              <button className={`cbx${done?' on':''}`} onClick={()=>togH(h.id)} style={{borderColor:done?color:'var(--border2)',background:done?color:'transparent'}}>{done&&'✓'}</button>
+              <div style={{flex:1}}>
+                <div style={{fontSize:14,fontWeight:600,color:done?color:'var(--t1)'}}>{h.name}</div>
+                <div style={{fontSize:11,marginTop:2,display:'flex',gap:8,alignItems:'center'}}>
+                  {st>0?<span style={{color:A}}>🔥 {st} day streak</span>:<span style={{color:'var(--t4)'}}>Start your streak today</span>}
+                  <span style={{color:'var(--t4)'}}>·</span>
+                  <span style={{color:'var(--t3)'}}>{(h.completedDates ? h.completedDates.length : 0)||0} total</span>
+                </div>
+              </div>
+              <button className="btni" onClick={()=>save({...data,goals:{...data.goals,habits:data.goals.habits.filter(x=>x.id!==h.id)}})}>✕</button>
+            </div>
+            <WeekDots dates={h.completedDates||[]} color={color}/>
+          </div>
+        );
+      })}
+      <div style={{display:'flex',gap:8,marginTop:16}}>
+        <input value={hN} onChange={e=>setHN(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addH()} placeholder="New habit..." style={{flex:1}}/>
+        <button onClick={addH} className="btn">Add Habit</button>
+      </div>
+    </div>
+
+    {/* Heatmap */}
+    {habTotal>0&&<div className="c">
+      <div className="sh">Habit activity — 35 days</div>
+      <Heatmap days={data.goals.habits.flatMap(h=>h.completedDates||[])} color={A} weeks={5}/>
+    </div>}
+
+    {/* Goals */}
+    <div className="c">
+      <div className="sh">Goals</div>
+      {data.goals.list.length===0&&<div style={{color:'var(--t4)',fontSize:13,textAlign:'center',padding:'12px 0'}}>No goals yet.</div>}
+      {data.goals.list.map((g,gi)=>{
+        const pct=g.target?Math.min(100,Number(g.current)/Number(g.target)*100):0;
+        const c=pct>=100?G:pct>=60?A:R;
+        return(
+          <div key={g.id} style={{padding:'14px 0',borderBottom:'1px solid var(--border)'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
+              <div>
+                <div style={{fontSize:14,fontWeight:600,color:'#fff'}}>{g.title}</div>
+                <div style={{fontSize:11,color:'var(--t3)',marginTop:2,fontFamily:'var(--mono)'}}>{g.current} / {g.target} {g.unit}</div>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <input value={g.current} onChange={e=>updG(g.id,e.target.value)} type="number" style={{width:72,textAlign:'right',fontSize:13}}/>
+                <button className="btni" onClick={()=>remG(g.id)}>✕</button>
+              </div>
+            </div>
+            <Prog pct={pct} color={c}/>
+            <div style={{display:'flex',justifyContent:'space-between',marginTop:5}}>
+              <div style={{fontSize:10,color:'var(--t3)'}}>{pct<100?`${(Number(g.target)-Number(g.current)).toFixed(1)} ${g.unit} to go`:''}</div>
+              <div style={{fontSize:11,color:c,fontFamily:'var(--mono)',fontWeight:700}}>{pct>=100?'🏆 Complete!':pct.toFixed(0)+'%'}</div>
+            </div>
+          </div>
+        );
+      })}
+      <div style={{marginTop:16}}>
+        <div className="fg4" style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr',gap:8,marginBottom:10}}>
+          <input value={gF.title} onChange={e=>setGF(p=>({...p,title:e.target.value}))} placeholder="Goal title"/>
+          <input value={gF.current} onChange={e=>setGF(p=>({...p,current:e.target.value}))} placeholder="Now" type="number"/>
+          <input value={gF.target} onChange={e=>setGF(p=>({...p,target:e.target.value}))} placeholder="Target" type="number"/>
+          <input value={gF.unit} onChange={e=>setGF(p=>({...p,unit:e.target.value}))} placeholder="Unit"/>
+        </div>
+        <button onClick={addG} className="btn">Add Goal</button>
+      </div>
+    </div>
+  </div>);
+}
+
+/* ══ TASKS ══════════════════════════════════════════════ */
+function Todos({data,save}){
+  const [txt,setTxt]=useState(''),[pri,setPri]=useState('medium'),[fil,setFil]=useState('active');
+  const add=()=>{if(!txt.trim())return;save({...data,todos:{list:[...data.todos.list,{id:Date.now(),text:txt.trim(),priority:pri,done:false}]}});setTxt('');};
+  const tog=(id)=>save({...data,todos:{list:data.todos.list.map(td=>td.id===id?{...td,done:!td.done,completedAt:!td.done?today():null}:td)}});
+  const rem=(id)=>save({...data,todos:{list:data.todos.list.filter(t=>t.id!==id)}});
+  const fl=fil==='all'?data.todos.list:fil==='active'?data.todos.list.filter(t=>!t.done):data.todos.list.filter(t=>t.done);
+  const sorted=[...fl].sort((a,b)=>({high:0,medium:1,low:2}[a.priority]-{high:0,medium:1,low:2}[b.priority]));
+  const active=data.todos.list.filter(t=>!t.done).length;
+  const done=data.todos.list.filter(t=>t.done).length;
+  const total=data.todos.list.length;
+  const pct=total?Math.round(done/total*100):0;
+  const pri7=last(7).map(d=>({high:data.todos.list.filter(t=>t.priority==='high').length,med:data.todos.list.filter(t=>t.priority==='medium').length}));
+  const taskTrend=last(7).map(d=>data.todos.list.filter(t=>t.completedAt===d).length);
+  const taskPctTrend=last(7).map(d=>{const tot=data.todos.list.filter(t=>!t.createdAt||t.createdAt<=d).length;const comp=data.todos.list.filter(t=>t.completedAt===d).length;return tot>0?Math.round(comp/tot*100):0;});
+  return(<div>
+    {/* Header */}
+    <div className="c" style={{background:`linear-gradient(135deg,var(--s2),#110e1a)`,borderColor:P+'30'}}>
+      <div style={{display:'flex',gap:20,alignItems:'center',flexWrap:'wrap'}}>
+        <Ring pct={pct} sz={100} sw={8} color={P} val={`${pct}%`} label="complete" sub={`${done}/${total} tasks`} glow/>
+        <div style={{flex:1,minWidth:160}}>
+          <div className="g2" style={{gap:8,marginBottom:10}}>
+            <MiniStat label="Remaining" val={active} color={R} sub="tasks left"/>
+            <MiniStat label="Done today" val={done} color={G}/>
+          </div>
+          <Prog pct={pct} color={P}/>
+          <div style={{display:'flex',justifyContent:'space-between',marginTop:6}}>
+            <span style={{fontSize:11,color:'var(--t3)'}}>Progress</span>
+            <span style={{fontSize:11,color:P,fontFamily:'var(--mono)',fontWeight:700}}>{pct}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Priority breakdown */}
+    {total>0&&<div className="c">
+      <div className="sh">Priority breakdown</div>
+      <div className="g3">
+        {[{l:'High',c:R,v:data.todos.list.filter(t=>t.priority==='high').length},{l:'Medium',c:A,v:data.todos.list.filter(t=>t.priority==='medium').length},{l:'Low',c:'var(--t2)',v:data.todos.list.filter(t=>t.priority==='low').length}].map(x=>(
+          <div key={x.l} className="c2" style={{borderLeft:`2px solid ${x.c}`,textAlign:'center'}}>
+            <div style={{fontFamily:'var(--mono)',fontSize:26,fontWeight:700,color:x.c}}>{x.v}</div>
+            <div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginTop:4}}>{x.l}</div>
+          </div>
+        ))}
+      </div>
+    </div>}
+
+    {/* Task completion trend line */}
+    <div className="c">
+      <div className="sh">Completion trend — 7 days</div>
+      <Spark vals={taskPctTrend} color={P} h={54}/>
+      <div style={{display:'flex',marginTop:7}}>{last(7).map(d=><div key={d} style={{flex:1,textAlign:'center',fontSize:8,color:'var(--t4)'}}>{dn(d)}</div>)}</div>
+      <div style={{display:'flex',justifyContent:'space-between',marginTop:8,paddingTop:8,borderTop:'1px solid var(--border)'}}>
+        <span style={{fontSize:11,color:'var(--t3)'}}>Tasks completed each day</span>
+        <span style={{fontFamily:'var(--mono)',fontSize:11,color:P,fontWeight:700}}>{taskPctTrend[taskPctTrend.length-1]}% today</span>
+      </div>
+    </div>
+
+    {/* Input */}
+    <div className="c">
+      <div style={{display:'flex',gap:8,marginBottom:12}}>
+        <input value={txt} onChange={e=>setTxt(e.target.value)} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="Add a task..." style={{flex:1}}/>
+        <select value={pri} onChange={e=>setPri(e.target.value)} style={{width:'auto',color:PRI[pri]}}>
+          <option value="high">🔴 High</option>
+          <option value="medium">🟡 Medium</option>
+          <option value="low">⚪ Low</option>
+        </select>
+        <button onClick={add} className="btn">Add</button>
+      </div>
+      <div style={{display:'flex',gap:6}}>
+        {[['active',`Active (${active})`],['done',`Done (${done})`],['all','All']].map(([f,l])=>(
+          <button key={f} onClick={()=>setFil(f)} className={`btng${fil===f?' on':''}`}>{l}</button>
+        ))}
+      </div>
+    </div>
+
+    <div className="c">
+      {sorted.length===0&&<div style={{color:'var(--t4)',fontSize:13,textAlign:'center',padding:'16px 0'}}>Nothing here.</div>}
+      {sorted.map(item=>(
+        <div key={item.id} className="row">
+          <button className={`cbx2${item.done?' on':''}`} style={{borderColor:item.done?G:PRI[item.priority]}} onClick={()=>tog(item.id)}>{item.done&&'✓'}</button>
+          <div style={{flex:1,fontSize:13,color:item.done?'var(--t3)':'var(--t1)',textDecoration:item.done?'line-through':'none',fontWeight:item.priority==='high'&&!item.done?500:400}}>{item.text}</div>
+          <div style={{width:8,height:8,borderRadius:'50%',background:PRI[item.priority],flexShrink:0}}/>
+          <button className="btni" onClick={()=>rem(item.id)}>✕</button>
+        </div>
+      ))}
+    </div>
+  </div>);
+}
+
+/* ══ BUSINESS (retainer model) ══════════════════════════ */
+function Business({data,save}){
+  const [cf,setCf]=useState({name:'',amount:'',startDate:today(),notes:''});
+  const [kf,setKf]=useState({name:'',target:'',current:'',unit:''});
+  const clients=data.business.clients||[];
+  const retainers=data.business.retainers||[];
+  const mrr=retainers.reduce((s,r)=>s+Number(r.amount||0),0);
+  const arr=mrr*12;
+  const addClient=()=>{
+    if(!cf.name)return;
+    const id=Date.now();
+    save({...data,business:{...data.business,
+      clients:[...clients,{id,name:cf.name,startDate:cf.startDate,notes:cf.notes}],
+      retainers:[...retainers,{id,clientId:id,amount:cf.amount,name:cf.name}]
+    }});
+    setCf({name:'',amount:'',startDate:today(),notes:''});
+  };
+  const remClient=(id)=>save({...data,business:{...data.business,
+    clients:clients.filter(c=>c.id!==id),
+    retainers:retainers.filter(r=>r.clientId!==id)
+  }});
+  const addKpi=()=>{if(!kf.name)return;save({...data,business:{...data.business,kpis:[...(data.business.kpis||[]),{...kf,id:Date.now()}]}});setKf({name:'',target:'',current:'',unit:''});};
+  const kpis=data.business.kpis||[];
+  // MRR over history (placeholder from retainers)
+  const mrrTrend=last(7).map((_,i)=>i===6?mrr:mrr*0.85);
+
+  return(<div>
+    {/* Hero */}
+    <div className="c" style={{background:`linear-gradient(135deg,var(--s2),#0a1a0d)`,borderColor:G+'30'}}>
+      <div style={{display:'flex',gap:20,alignItems:'center',flexWrap:'wrap'}}>
+        <Ring pct={Math.min(100,clients.length*10)} sz={120} sw={10} color={G} val={`${clients.length}`} label="clients" sub="signed" glow/>
+        <div style={{flex:1,minWidth:160}}>
+          <div className="g2" style={{gap:8}}>
+            <MiniStat label="MRR" val={`$${mrr.toLocaleString()}`} color={G} sub="per month"/>
+            <MiniStat label="ARR" val={`$${arr.toLocaleString()}`} color={G} sub="annualized"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* MRR sparkline */}
+    <div className="c">
+      <div className="sh">MRR trend (7 days)</div>
+      <Spark vals={mrrTrend} color={G} h={54}/>
+      <div style={{display:'flex',marginTop:7}}>{last(7).map(d=><div key={d} style={{flex:1,textAlign:'center',fontSize:8,color:'var(--t4)'}}>{dn(d)}</div>)}</div>
+    </div>
+
+    {/* Client list */}
+    <div className="c">
+      <div className="sh">Signed clients ({clients.length})</div>
+      {clients.length===0&&<div style={{color:'var(--t4)',fontSize:13,textAlign:'center',padding:'16px 0'}}>No clients yet — add your first below.</div>}
+      {clients.map(c=>{
+        const ret=retainers.find(r=>r.clientId===c.id);
+        return(
+          <div key={c.id} style={{padding:'12px 0',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:12}}>
+            <div style={{width:38,height:38,borderRadius:10,background:G+'18',border:`1px solid ${G+'30'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:700,color:G,flexShrink:0}}>
+              {c.name.charAt(0).toUpperCase()}
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:14,fontWeight:600,color:'#fff'}}>{c.name}</div>
+              <div style={{fontSize:11,color:'var(--t3)',marginTop:1}}>Since {fmt(c.startDate)}{c.notes?` · ${c.notes}`:''}</div>
+            </div>
+            <div style={{fontFamily:'var(--mono)',fontSize:16,fontWeight:700,color:G}}>${(ret ? Number(ret.amount||0) : 0).toLocaleString()}<span style={{fontSize:10,color:'var(--t3)',fontWeight:400}}>/mo</span></div>
+            <button className="btni" onClick={()=>remClient(c.id)}>✕</button>
+          </div>
+        );
+      })}
+      <div style={{marginTop:16}}>
+        <div className="sh">Add client</div>
+        <div className="g2" style={{gap:10,marginBottom:10}}>
+          <div><div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:5}}>Client name</div><input value={cf.name} onChange={e=>setCf(p=>({...p,name:e.target.value}))} placeholder="Client Co."/></div>
+          <div><div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:5}}>Monthly retainer ($)</div><input value={cf.amount} onChange={e=>setCf(p=>({...p,amount:e.target.value}))} type="number" placeholder="0"/></div>
+          <div><div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:5}}>Start date</div><input value={cf.startDate} onChange={e=>setCf(p=>({...p,startDate:e.target.value}))} type="date"/></div>
+          <div><div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:5}}>Notes</div><input value={cf.notes} onChange={e=>setCf(p=>({...p,notes:e.target.value}))} placeholder="Service type, etc."/></div>
+        </div>
+        <button onClick={addClient} className="btn">Add Client</button>
+      </div>
+    </div>
+
+    {/* KPI tracker */}
+    <div className="c">
+      <div className="sh">KPI tracker</div>
+      {kpis.map(k=>{const pct=k.target?Math.min(100,Number(k.current)/Number(k.target)*100):0;const c=pct>=80?G:pct>=50?A:R;return(
+        <div key={k.id} style={{padding:'12px 0',borderBottom:'1px solid var(--border)'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+            <div style={{fontSize:13,fontWeight:600}}>{k.name} <span style={{fontSize:12,color:'var(--t3)',fontWeight:400}}>{k.unit}</span></div>
+            <div style={{display:'flex',alignItems:'center',gap:6}}>
+              <input value={k.current} onChange={e=>save({...data,business:{...data.business,kpis:kpis.map(x=>x.id===k.id?{...x,current:e.target.value}:x)}})} type="number" style={{width:80,textAlign:'right'}}/>
+              <span style={{color:'var(--t3)',fontSize:12}}>/ {k.target}</span>
+              <button className="btni" onClick={()=>save({...data,business:{...data.business,kpis:kpis.filter(x=>x.id!==k.id)}})}>✕</button>
+            </div>
+          </div>
+          <Prog pct={pct} color={c}/>
+          <div style={{textAlign:'right',fontSize:11,color:c,marginTop:4,fontFamily:'var(--mono)',fontWeight:700}}>{pct.toFixed(0)}%</div>
+        </div>
+      );})}
+      <div style={{marginTop:16}}>
+        <div className="fg4" style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr',gap:8,marginBottom:10}}>
+          <input value={kf.name} onChange={e=>setKf(p=>({...p,name:e.target.value}))} placeholder="KPI name"/>
+          <input value={kf.current} onChange={e=>setKf(p=>({...p,current:e.target.value}))} placeholder="Now" type="number"/>
+          <input value={kf.target} onChange={e=>setKf(p=>({...p,target:e.target.value}))} placeholder="Target" type="number"/>
+          <input value={kf.unit} onChange={e=>setKf(p=>({...p,unit:e.target.value}))} placeholder="Unit"/>
+        </div>
+        <button onClick={addKpi} className="btn">Add KPI</button>
+      </div>
+    </div>
+  </div>);
+}
+
+/* ══ FINANCE ════════════════════════════════════════════ */
+function Finance({data,save}){
+  const t=today(),m=month();
+  const [form,setForm]=useState({type:'expense',category:'',amount:'',note:'',date:t});
+  const add=()=>{if(!form.amount||!form.category)return;save({...data,finance:{transactions:[...data.finance.transactions,{...form,id:Date.now()}]}});setForm({type:'expense',category:'',amount:'',note:'',date:t});};
+  const rem=(id)=>save({...data,finance:{transactions:data.finance.transactions.filter(x=>x.id!==id)}});
+  const mtx=data.finance.transactions.filter(x=>x.date && x.date.startsWith(m));
+  const inc=mtx.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount),0);
+  const exp=mtx.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount),0);
+  const net=inc-exp,sr=inc>0?Math.max(0,Math.round(net/inc*100)):0;
+  const catT={};mtx.filter(x=>x.type==='expense').forEach(x=>{catT[x.category]=(catT[x.category]||0)+Number(x.amount);});
+  const mxC=Math.max(...Object.values(catT),1);
+  const dailySpend=last(7).map(d=>data.finance.transactions.filter(x=>x.date===d&&x.type==='expense').reduce((s,x)=>s+Number(x.amount),0));
+  const CAT_COLORS=[R,A,P,B,PK,G,R];
+
+  return(<div>
+    {/* Hero */}
+    <div className="c" style={{background:`linear-gradient(135deg,var(--s2),${net>=0?'#0a1a0d':'#1a0a0a'})`,borderColor:(net>=0?G:R)+'30'}}>
+      <div style={{display:'flex',gap:20,alignItems:'center',flexWrap:'wrap'}}>
+        <Ring pct={sr} sz={120} sw={10} color={net>=0?G:R} val={`${sr}%`} label="saved" sub={net>=0?'on track':'overspent'} glow/>
+        <div style={{flex:1,minWidth:160}}>
+          <div className="g2" style={{gap:8}}>
+            <MiniStat label="Income" val={`$${inc.toLocaleString()}`} color={G}/>
+            <MiniStat label="Expenses" val={`$${exp.toLocaleString()}`} color={R}/>
+            <MiniStat label="Net" val={`$${net.toLocaleString()}`} color={net>=0?G:R}/>
+            <MiniStat label="Savings rate" val={`${sr}%`} color={net>=0?G:R}/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Daily spending bars */}
+    <div className="c">
+      <div className="sh">Daily spending — 7 days</div>
+      <Bars vals={dailySpend} labels={last(7).map(dn)} color={R} h={80}/>
+    </div>
+
+    {/* Category breakdown */}
+    {Object.keys(catT).length>0&&<div className="c">
+      <div className="sh">Spending by category</div>
+      {Object.entries(catT).sort((a,b)=>b[1]-a[1]).map(([cat,amt],i)=>(
+        <div key={cat} style={{marginBottom:13}}>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:6,alignItems:'center'}}>
+            <div style={{display:'flex',gap:8,alignItems:'center'}}>
+              <div style={{width:8,height:8,borderRadius:'50%',background:CAT_COLORS[i%CAT_COLORS.length]}}/>
+              <span style={{fontSize:13,fontWeight:500,color:'#fff'}}>{cat}</span>
+            </div>
+            <span style={{fontSize:13,color:R,fontFamily:'var(--mono)',fontWeight:700}}>${amt.toLocaleString()}</span>
+          </div>
+          <div style={{background:'var(--s3)',borderRadius:6,height:5,overflow:'hidden'}}>
+            <div style={{width:`${(amt/mxC)*100}%`,height:'100%',background:CAT_COLORS[i%CAT_COLORS.length],borderRadius:6,opacity:.8}}/>
+          </div>
+        </div>
+      ))}
+    </div>}
+
+    {/* Add */}
+    <div className="c">
+      <div className="sh">Add transaction</div>
+      <div className="g2" style={{gap:10,marginBottom:12}}>
+        <div><div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:5}}>Type</div><select value={form.type} onChange={e=>setForm(p=>({...p,type:e.target.value}))} style={{color:form.type==='income'?G:R}}><option value="income">Income</option><option value="expense">Expense</option></select></div>
+        <div><div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:5}}>Category</div><input value={form.category} onChange={e=>setForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Rent"/></div>
+        <div><div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:5}}>Amount ($)</div><input value={form.amount} onChange={e=>setForm(p=>({...p,amount:e.target.value}))} type="number" placeholder="0.00"/></div>
+        <div><div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:5}}>Date</div><input value={form.date} onChange={e=>setForm(p=>({...p,date:e.target.value}))} type="date"/></div>
+        <div style={{gridColumn:'1/-1'}}><div style={{fontSize:10,color:'var(--t3)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:5}}>Note</div><input value={form.note} onChange={e=>setForm(p=>({...p,note:e.target.value}))} placeholder="Description"/></div>
+      </div>
+      <button onClick={add} className="btn">Add Transaction</button>
+    </div>
+
+    {/* Recent */}
+    <div className="c">
+      <div className="sh">Recent transactions</div>
+      {mtx.length===0&&<div style={{color:'var(--t4)',fontSize:13,textAlign:'center',padding:'14px 0'}}>No transactions this month.</div>}
+      {[...mtx].reverse().slice(0,12).map(tx=>(
+        <div key={tx.id} className="row">
+          <div style={{width:34,height:34,borderRadius:9,background:tx.type==='income'?G+'18':R+'18',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}}>
+            {tx.type==='income'?'↑':'↓'}
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:600,color:'#fff'}}>{tx.category}{tx.note?<span style={{color:'var(--t3)',fontWeight:400}}> — {tx.note}</span>:''}</div>
+            <div style={{fontSize:10,color:'var(--t3)',marginTop:1,textTransform:'uppercase',letterSpacing:'.06em'}}>{fmt(tx.date)}</div>
+          </div>
+          <div style={{fontFamily:'var(--mono)',fontSize:14,fontWeight:700,color:tx.type==='income'?G:R}}>{tx.type==='income'?'+':'-'}${Number(tx.amount).toLocaleString()}</div>
+          <button className="btni" onClick={()=>rem(tx.id)}>✕</button>
+        </div>
+      ))}
+    </div>
+  </div>);
+}
+
+/* ══ APP ════════════════════════════════════════════════ */
+const NAV=[
+  {id:'overview',icon:'⬡',label:'Main'},
+  {id:'fitness',icon:'⊕',label:'Gym'},
+  {id:'sleep',icon:'◑',label:'Health'},
+  {id:'goals',icon:'◎',label:'Goals'},
+  {id:'todos',icon:'▦',label:'Tasks'},
+  {id:'business',icon:'△',label:'Brand'},
+  {id:'finance',icon:'◇',label:'Finance'},
+];
+const TITLES={overview:'Overview',fitness:'Gym',sleep:'Health',goals:'Goals & Habits',todos:'Tasks',business:'Brand',finance:'Finances'};
+const ICON_COLOR={overview:G,fitness:G,sleep:B,goals:A,todos:P,business:G,finance:G};
+
+function App(){
+  const [sec,setSec]=useState('overview');
+  const [data,setData]=useState(()=>get('dashboard-v3',DEF));
+  const [aiOpen,setAiOpen]=useState(false);
+  const save=(nd)=>{setData(nd);set('dashboard-v3',nd);};
+  const h=new Date().getHours();
+  const period=h<12?'Morning':h<17?'Afternoon':'Evening';
+  const dateStr=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase();
+  return(<div id="root">
+    <div className="topbar">
+      <div className="tb-left">
+        <div className="tb-name">My Dashboard</div>
+        <div className="tb-date">{TITLES[sec]} · {dateStr}</div>
+      </div>
+      <div className="tb-pills">
+        <span className="pill">{dateStr}</span>
+        <span className="pill live">● {period}</span>
+      </div>
+    </div>
+    <div className="shell">
+      <nav className="sidebar">
+        {NAV.map(({id,icon,label})=>(
+          <button key={id} className={`nb${sec===id?' on':''}`} onClick={()=>setSec(id)} title={label}
+            style={sec===id?{color:ICON_COLOR[id]}:{}}>
+            <span className="i">{icon}</span>
+            <span className="l">{label}</span>
+          </button>
+        ))}
+        <div className="ns"/>
+        <button className={`aib${aiOpen?' on':''}`} onClick={()=>setAiOpen(p=>!p)} title="Overseer">✦</button>
+      </nav>
+      <div className="main">
+        <div className="scroll">
+          {sec==='overview'&&<Overview data={data}/>}
+          {sec==='fitness'&&<Fitness data={data} save={save}/>}
+          {sec==='sleep'&&<SleepHealth data={data} save={save}/>}
+          {sec==='goals'&&<GoalsHabits data={data} save={save}/>}
+          {sec==='todos'&&<Todos data={data} save={save}/>}
+          {sec==='business'&&<Business data={data} save={save}/>}
+          {sec==='finance'&&<Finance data={data} save={save}/>}
+        </div>
+      </div>
+      <AIPanel data={data} open={aiOpen} onClose={()=>setAiOpen(false)}/>
+    </div>
+    <div className="mobnav">
+      <div className="mobin">
+        {NAV.map(({id,icon,label})=>(
+          <button key={id} className={`mbb${sec===id?' on':''}`} onClick={()=>setSec(id)}
+            style={sec===id?{color:ICON_COLOR[id]}:{}}>
+            <span className="i">{icon}</span>
+            <span className="l">{label}</span>
+          </button>
+        ))}
+        <button className={`mbai${aiOpen?' on':''}`} onClick={()=>setAiOpen(p=>!p)}>✦</button>
+      </div>
+    </div>
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
